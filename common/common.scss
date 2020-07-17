@@ -1,0 +1,13 @@
+.wiki .topic-body {
+    background-color: #f4ffdc; /*light green. Default: dcffdc*/
+}
+
+.post-info.edits .wiki::before {
+    content: "WIKI";
+    color: green;
+    background-color: #d2e2d2;
+    margin-right: 3px;
+    font-weight: bold;
+    border: 1px solid green;
+    padding: 3px;
+}
