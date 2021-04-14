@@ -36,14 +36,48 @@ drift.load('sbhikk2kkxtz');
   analytics.page();
   // Track clicks
   document.addEventListener('DOMContentLoaded', () => {
-    const links = document.querySelectorAll('a');
-    links.forEach((link) => 
-      analytics.trackLink(link, 'Click', {
+    // waits until query selector returns at least one element to call func
+    function waitForLoad(querySelector, func) {
+      if (document.querySelectorAll(querySelector).length > 0) {
+        func();
+      } else {
+        setTimeout(() => waitForLoad(querySelector, func), 100)
+      }
+    }
+
+    // Tracks all links on the page
+    function trackAllLinks() {
+      const links = document.querySelectorAll('a');
+      links.forEach((link) => 
+        analytics.trackLink(link, 'Click', {
           id: link.id,
           to: link.href,
           text: link.innerText
-      })
-    );
+        })
+      );
+    }
+
+    function trackSpaPageChanges(querySelector) {
+      // add intermediate listener to pushState to track SPA page changes
+      (function(history){
+        var pushState = history.pushState;
+        history.pushState = function(state) {
+            analytics.page();
+            waitForLoad(querySelector, trackAllLinks);
+            return pushState.apply(history, arguments);
+        };
+      })(window.history);
+
+      window.onpopstate = () => {
+        analytics.page();
+        waitForLoad(querySelector, trackAllLinks);
+      }
+    }
+
+    
+    // Discourse specific implementation
+    // If one of the below query selectors is loaded, page is loaded
+    trackSpaPageChanges('.fancy-title,a.title.raw-link.raw-topic-link')
   });
 }}();
 </script>
